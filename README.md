@@ -4,7 +4,7 @@ Various Expect Scripts and templates I have put together
 
 ## Usage
 
-There are markdown files that contain code. I included a [tangle](script/tangle.tcl) script to untangle the code from the markdown. 
+There are markdown files that contain code. I included a [tangle](scripts/tangle.tcl) script to untangle the code from the markdown. 
 
 These scripts will require [TCL](https://tcl-lang.org) and [Expect](https://www.nist.gov/services-resources/software/expect).
 
