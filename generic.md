@@ -147,7 +147,6 @@ if { $argc != 6 } {
 # You could use set host [lindex $argv 0], set ssh_user [lindex $argv 1]
 # but the foreach break trick here saves some typing.
 foreach {host ssh_user ssh_pass user current_password new_password} $argv break
-puts "$host $ssh_user $ssh_pass $user $current_password $new_password"
 @
 ```
 
@@ -157,6 +156,8 @@ puts "$host $ssh_user $ssh_pass $user $current_password $new_password"
 * We'll also hard code the expect `prompt`.
 * set the `TERM` environment variable to dump, this fixes some possible issues.
 * Limit how much we'll match. 
+* We set the exit code `ret` to 1 (failure). The only way it get set to 0
+is if we run the command and it succeds.
 
 ```
 <<vars>>=
@@ -208,14 +209,19 @@ expect {
         exit 111
     }
     -re ".*failed.*" {
+        # if failed is in the return from the command, not that it failed.
         send_user "command failed\n"
     }
     -ex $prompt {
+        # if we get here, we know the command ran without issue.
         set ret 0
     }
 }
 @
 ```
+
+NOTE: The above make some assumptions about how the command fails. Here we 
+only assume we'll get a prompt if the command succeds. This may need to be adjusted based on out the errors are reported.
 
 ## We are done, exit and clean up.
 
@@ -249,4 +255,57 @@ exit $ret
 <<done>>
 <<end>>
 @
+```
+
+## Testing
+
+I added the following script to a ssh host for testing. It will do the following:
+
+* error out of the arguments are not right.
+* timeout if the new password is set to timeout.
+* fail if the old password is fail.
+* otherwise report success.
+
+```
+<<changepass.sh>>=
+#!/bin/sh
+set -e
+
+user=$1; shift
+old=$1;  shift
+new=$1;  shift
+
+if [ "x$new" = "xtimeout" ] ; then 
+  echo "timing out"
+  sleep 30
+  exit 0
+fi
+
+if [ "x$old" = "xfail" ] ; then
+  echo "password changed failed for $user"
+  exit 1
+fi
+
+exit 0
+@
+```
+
+### To test
+
+```
+$ make generic.exp
+$ tclsh ./scripts/tangle.tcl -R changepass.sh generic.md > changepass.sh
+
+$ expect ./generic.exp testhost mek password theman oldpass ; echo $?
+# should return 1 not enough arguments
+
+
+$ expect ./generic.exp testhost mek password theman oldpass newpass ; echo $?
+# should return 0 all good
+
+$ expect ./generic.exp testhost mek password theman fail newpass ; echo $?
+# should return 1 we are forcing a failure
+
+$ expect ./generic.exp testhost mek password theman oldpass timeout; echo $?
+# should return 111 we are forcing a time out.
 ```
