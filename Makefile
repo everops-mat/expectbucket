@@ -18,7 +18,7 @@ exp: $(ALL:%=%.exp)
 
 clean:
 	@rm -f *~
-	@rm -rf $(ALL:%=%.tcl) $(ALL:%=%.exp)
+	@rm -f $(ALL:%=%.tcl) $(ALL:%=%.exp)
+	@rm -f `cat TARGETS`
 
 .PHONY: default all clean test tcl exp
-
