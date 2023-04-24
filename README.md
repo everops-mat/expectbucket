@@ -19,3 +19,21 @@ You'll probably need to adjust how it figures out the remote command failed.
 
 `make generic.exp` will generate the script. 
 
+## chpass
+
+The [chpass](chpass.md) script will look into a remote system and 
+attempt to run `passwd` and change the password for that user.
+
+Simulates:
+
+```
+$ ssh $user@$host
+host$ passwd
+old password: ****
+new password: ****
+reenter new password: ****
+$
+```
+
+NOTE: This will still connect if ssh-key authenitcation is working, 
+you'll still need to use the ssh_pass setting.

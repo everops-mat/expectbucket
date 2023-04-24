@@ -1,5 +1,5 @@
 TANGLE=tclsh ./scripts/tangle.tcl
-ALL=generic
+ALL=generic chpass
 
 .SUFFIXES: .md .tcl .exp
 
