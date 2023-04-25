@@ -41,7 +41,9 @@ def expandChunks(chunk, indent):
         else:
             print(indent + line)
 
+#
 # Main
+#
 
 chunks = {}
 requestedChunk="*"
@@ -78,7 +80,8 @@ with open(filename) as fp:
         if not in_chunk_p and match:
             in_chunk_p = True
             chunk = match.group(1)
-            chunks[chunk] = []
+            if not chunk in chucks.keys()
+                chunks[chunk] = []
             continue
 
         match = re.match("@", line)
