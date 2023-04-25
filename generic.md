@@ -96,6 +96,7 @@ proc connect { password prompt } {
            exp_continue
        }
        -exact $prompt {
+           # we only return good if we get the prompt
            return 1
        }
        timeout { 
@@ -108,8 +109,8 @@ proc connect { password prompt } {
            send_user "end of stream, could not log in\n"
            return 0  
        }
-       return 1
     }
+    return 0
 }
 @
 ```
@@ -154,7 +155,7 @@ foreach {host ssh_user ssh_pass user current_password new_password} $argv break
 
 * We are going to hard-code `timeout` for the time being.
 * We'll also hard code the expect `prompt`.
-* set the `TERM` environment variable to dump, this fixes some possible issues.
+* set the `TERM` environment variable to dumb, this fixes some possible issues.
 * Limit how much we'll match. 
 * We set the exit code `ret` to 1 (failure). The only way it get set to 0
 is if we run the command and it succeds.
@@ -162,8 +163,8 @@ is if we run the command and it succeds.
 ```tcl
 <<vars>>=
 set timeout 5
-set prompt ">"
-set env(TERM) dump
+set prompt "apc>"
+set env(TERM) dumb
 set match_max 100000
 # the return code, only set to 0 if command excutes and without error
 set ret 1
@@ -198,7 +199,10 @@ if { [connect $ssh_pass $prompt] == 0 } {
 
 ```tcl
 <<runcommand>>=
-exp_send "~/bin/change_password $user $current_password $new_password\n"
+## sleep to make sure we are not going to fast
+sleep 2
+set send_slow {5 .01} # send slow should wait .01 msec after 5 chars
+exp_send -s -- "~/bin/change_password $user $current_password $new_password\r"
 expect {
     eof { 
         send_user "error running program, connection dropped\n"
