@@ -97,7 +97,17 @@ We'll use a ssh command of `ssh $ssh_user@$host`. Then we'll run this
 connect procedure to see if we logged in succesfully with the password.
 We'll look for the prompt. 
 
-In our case here, we need the exact prompt, not a regular expession for it.
+We'll use `exp_continue` here because we'll either get asked about 
+adding the ssh public key or not. You can include this as an error
+if you choose for security reasons. 
+
+The command `exp_continue` will stay in the same expect response and
+continue, checking the output. If there was an expectation of having 
+to enter something more that once (like a password) it is sometimes
+good to include something like this in a loop and break out. 
+
+We'll show an example of that in the password changing part of the 
+script.
 
 ```tcl
 <<connect>>=
@@ -199,6 +209,9 @@ set ret 1
 @
 ```
 
+NOTE: We to a regular expression check on the data from the expect 
+stream. The prompt may be a little too generic, YMMV.
+
 ## Login to ssh host
 
 We have check our arguments and setup or variables. Let's login.
@@ -224,6 +237,32 @@ if { [connect $ssh_pass $prompt] == 0 } {
 ```
 
 ## We are logged in. Let's do stuff!
+
+Here you'll see our around the expect script. 
+
+```tcl
+while { 1 } { 
+  #
+}
+```
+
+Expect will keep reading and looking for responses. This allows 
+use to give the current password and use the same expect stanza to 
+give the new password (twice). It save some code in repeating the 
+same process for the old password and the new passowrd (2 times!).
+
+Since we want to run this script on a machine and know if the 
+command was successful, we need to get some type of return code
+from the remote machine. Expect can't do that. so we use use 
+the expect stanza to create a return code `ret`.
+
+If there is a big error, (eof, timeout), we want to exit with 111. We 
+default the return code to 1, standard failure (pessmistic much Mat?).
+
+If we get `success` then we set the return code to 0.
+
+When we exit the expect script, we exit with `exit $ret` so a shell script 
+can then check the return value to see if the remote command was successful.
 
 ```tcl
 <<runcommand>>=
